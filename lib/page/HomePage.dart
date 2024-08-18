@@ -44,519 +44,6 @@ class HomePageState extends State<HomePage> {
     _updateTripCards();
   }
 
-void _addVacationForm(BuildContext context) {
-  final TextEditingController vacationName = TextEditingController();
-  String? _startYear, _endYear;
-  String? _startMonth, _endMonth;  // Set to null initially
-  int _startDaysInMonth = 0, _endDaysInMonth = 0;  // To store the number of days in the selected month
-  String? _startDay, _endDay;  // To store the selected day
-
-  int currentYear = DateTime.now().year;
-  List<String> years = List<String>.generate(11, (index) => (currentYear + index).toString());
-
-  List<Map<String, int>> monthDays = [
-    {"January": 31},
-    {"February": 28},  // 29 in a leap year
-    {"March": 31},
-    {"April": 30},
-    {"May": 31},
-    {"June": 30},
-    {"July": 31},
-    {"August": 31},
-    {"September": 30},
-    {"October": 31},
-    {"November": 30},
-    {"December": 31}
-  ];
-
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        backgroundColor: Color(0xFFB0C1BC),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
-        title: const Icon(Icons.home),
-        content: StatefulBuilder(
-          builder: (BuildContext context, StateSetter setState) {
-            return SizedBox(
-              width: 280.0,  // Adjusted width to fit all inputs
-              height: 350.0,  // Adjusted height to reduce the overall size
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 20.0),  // Adjusted padding to remove extra space
-                    child: TextField(
-                      controller: vacationName,
-                      decoration: InputDecoration(
-                        labelText: 'Enter Vacation Name',
-                        prefixIcon: const Icon(Icons.flight),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.0),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(color: Color.fromARGB(255, 214, 234, 228), width: 2.0),
-                          borderRadius: BorderRadius.circular(12.0),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(color: Color.fromARGB(255, 112, 124, 120), width: 1.0),
-                          borderRadius: BorderRadius.circular(12.0),
-                        ),
-                      ),
-                      style: const TextStyle(color: Colors.black, fontSize: 16.0),
-                    ),
-                  ),
-
-                  // Start Time Section
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("Start Time"),
-                      SizedBox(height: 8.0),
-                      Row(
-                        children: [
-                          // Start Year Dropdown
-                          Expanded(
-                            child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 4.0),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.grey, width: 1.0),
-                                borderRadius: BorderRadius.circular(8.0),
-                              ),
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton<String>(
-                                  isExpanded: true,
-                                  value: _startYear,  // The current value of the DropdownButton
-                                  hint: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                    child: Text("Year", style: TextStyle(fontSize: 12.0)),  // Adjusted font size
-                                  ),
-                                  items: years.map((year) {
-                                    return DropdownMenuItem<String>(
-                                      value: year,
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                        child: Text(year, style: TextStyle(fontSize: 12.0)),  // Adjusted font size
-                                      ),
-                                    );
-                                  }).toList(),
-                                  onChanged: (String? newValue) {
-                                    setState(() {
-                                      _startYear = newValue;
-                                      // Recalculate February days for leap year
-                                      if (_startMonth == "February") {
-                                        _startDaysInMonth = isLeapYear(_startYear) ? 29 : 28;
-                                      }
-                                    });
-                                  },
-                                ),
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: 8.0),
-
-                          // Start Month Dropdown
-                          Expanded(
-                            child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 4.0),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.grey, width: 1.0),
-                                borderRadius: BorderRadius.circular(8.0),
-                              ),
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton<String>(
-                                  isExpanded: true,
-                                  value: _startMonth,  // The current value of the DropdownButton
-                                  hint: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                    child: Text("Month", style: TextStyle(fontSize: 12.0)),  // Adjusted font size
-                                  ),
-                                  items: monthDays.map((month) {
-                                    String value = month.keys.first;  // Extract the key (month name) from the map
-                                    return DropdownMenuItem<String>(
-                                      value: value,
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                        child: Text(value, style: TextStyle(fontSize: 12.0)),  // Adjusted font size
-                                      ),
-                                    );
-                                  }).toList(),
-                                  onChanged: (String? newValue) {
-                                    setState(() {
-                                      _startMonth = newValue!;
-                                      _startDaysInMonth = monthDays.firstWhere((month) => month.keys.first == _startMonth).values.first;
-                                      // Check for leap year in February
-                                      if (_startMonth == "February") {
-                                        _startDaysInMonth = isLeapYear(_startYear) ? 29 : 28;
-                                      }
-                                      _startDay = null;  // Reset the selected day
-                                    });
-                                  },
-                                ),
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: 8.0),
-
-                          // Start Day Dropdown
-                          Expanded(
-                            child: _startMonth != null 
-                              ? Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 4.0),
-                                  decoration: BoxDecoration(
-                                    border: Border.all(color: Colors.grey, width: 1.0),
-                                    borderRadius: BorderRadius.circular(8.0),
-                                  ),
-                                  child: DropdownButtonHideUnderline(
-                                    child: DropdownButton<String>(
-                                      isExpanded: true,
-                                      value: _startDay,
-                                      hint: Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                        child: Text("Day", style: TextStyle(fontSize: 12.0)),  // Adjusted font size
-                                      ),
-                                      items: List.generate(_startDaysInMonth, (index) {
-                                        String day = (index + 1).toString();
-                                        return DropdownMenuItem<String>(
-                                          value: day,
-                                          child: Padding(
-                                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                            child: Text(day, style: TextStyle(fontSize: 12.0)),  // Adjusted font size
-                                          ),
-                                        );
-                                      }).toList(),
-                                      onChanged: (String? newValue) {
-                                        setState(() {
-                                          _startDay = newValue!;
-                                        });
-                                      },
-                                    ),
-                                  ),
-                                )
-                              : SizedBox.shrink(),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-
-                  SizedBox(height: 16.0),  // Reduced spacing between start and end time sections
-
-                  // End Time Section
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("End Time"),
-                      SizedBox(height: 8.0),
-                      Row(
-                        children: [
-                          // End Year Dropdown
-                          Expanded(
-                            child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 4.0),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.grey, width: 1.0),
-                                borderRadius: BorderRadius.circular(8.0),
-                              ),
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton<String>(
-                                  isExpanded: true,
-                                  value: _endYear,  // The current value of the DropdownButton
-                                  hint: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                    child: Text("Year", style: TextStyle(fontSize: 12.0)),  // Adjusted font size
-                                  ),
-                                  items: years.map((year) {
-                                    return DropdownMenuItem<String>(
-                                      value: year,
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                        child: Text(year, style: TextStyle(fontSize: 12.0)),  // Adjusted font size
-                                      ),
-                                    );
-                                  }).toList(),
-                                  onChanged: (String? newValue) {
-                                    setState(() {
-                                      _endYear = newValue;
-                                      // Recalculate February days for leap year
-                                      if (_endMonth == "February") {
-                                        _endDaysInMonth = isLeapYear(_endYear) ? 29 : 28;
-                                      }
-                                    });
-                                  },
-                                ),
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: 8.0),
-
-                          // End Month Dropdown
-                          Expanded(
-                            child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 4.0),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.grey, width: 1.0),
-                                borderRadius: BorderRadius.circular(8.0),
-                              ),
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton<String>(
-                                  isExpanded: true,
-                                  value: _endMonth,  // The current value of the DropdownButton
-                                  hint: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                    child: Text("Month", style: TextStyle(fontSize: 12.0)),  // Adjusted font size
-                                  ),
-                                  items: monthDays.map((month) {
-                                    String value = month.keys.first;  // Extract the key (month name) from the map
-                                    return DropdownMenuItem<String>(
-                                      value: value,
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                        child: Text(value, style: TextStyle(fontSize: 12.0)),  // Adjusted font size
-                                      ),
-                                    );
-                                  }).toList(),
-                                  onChanged: (String? newValue) {
-                                    setState(() {
-                                      _endMonth = newValue!;
-                                      _endDaysInMonth = monthDays.firstWhere((month) => month.keys.first == _endMonth).values.first;
-                                      // Check for leap year in February
-                                      if (_endMonth == "February") {
-                                        _endDaysInMonth = isLeapYear(_endYear) ? 29 : 28;
-                                      }
-                                      _endDay = null;  // Reset the selected day
-                                    });
-                                  },
-                                ),
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: 8.0),
-
-                          // End Day Dropdown
-                          Expanded(
-                            child: _endMonth != null 
-                              ? Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 4.0),
-                                  decoration: BoxDecoration(
-                                    border: Border.all(color: Colors.grey, width: 1.0),
-                                    borderRadius: BorderRadius.circular(8.0),
-                                  ),
-                                  child: DropdownButtonHideUnderline(
-                                    child: DropdownButton<String>(
-                                      isExpanded: true,
-                                      value: _endDay,
-                                      hint: Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                        child: Text("Day", style: TextStyle(fontSize: 12.0)),  // Adjusted font size
-                                      ),
-                                      items: List.generate(_endDaysInMonth, (index) {
-                                        String day = (index + 1).toString();
-                                        return DropdownMenuItem<String>(
-                                          value: day,
-                                          child: Padding(
-                                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                            child: Text(day, style: TextStyle(fontSize: 12.0)),  // Adjusted font size
-                                          ),
-                                        );
-                                      }).toList(),
-                                      onChanged: (String? newValue) {
-                                        setState(() {
-                                          _endDay = newValue!;
-                                        });
-                                      },
-                                    ),
-                                  ),
-                                )
-                              : SizedBox.shrink(),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
-        actions: <Widget>[
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0, bottom: 8.0),  // Reduced padding to remove extra space
-            child: FloatingActionButton(
-              onPressed: () async {
-                if (_startYear == null || _startMonth == null || _startMonth == "Select A Month" || _startDay == null ||
-                    _endYear == null || _endMonth == null || _endMonth == "Select A Month" || _endDay == null) {
-                  // Show a message to select a valid year, month, and day
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Please select valid start and end dates.')),
-                  );
-                } else {
-                  final vacation = vacationName.text;
-                  addData(vacation, "","$_startMonth $_startDay $_startYear-$_endMonth $_endDay $_endYear", "", _jsonData, widget.information);
-                  // Process end date similarly if needed
-
-                  setState(() {
-                    _selectedKey = vacation;
-                    _informationLoaded = false;
-                    _updateInformationCallback(_selectedKey);
-                  });
-                  Navigator.pop(context);
-                }
-              },
-              backgroundColor: Color(0xFFB0C1BC),
-              child: const Icon(Icons.add),
-            ),
-          ),
-        ],
-      );
-    },
-  );
-}
-
-void _addInformationForm(BuildContext context) {
-  final TextEditingController destinationName = TextEditingController();
-  String selectedDay = 'Select A Day';
-  String selectedTime = 'Select A Time';
-
-  void _showDatePicker(StateSetter setState) {
-    showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(DateTime.now().year),
-      lastDate: DateTime(DateTime.now().year + 10),
-    ).then((value) {
-      if (value != null) {
-        setState(() {
-          selectedDay = '${value.year}-${value.month}-${value.day}';
-        });
-      }
-    });
-  }
-
-
-
-void _showTimePicker(StateSetter setState) {
-  showTimePicker(
-    context: context,
-    initialTime: TimeOfDay.now(),
-    initialEntryMode: TimePickerEntryMode.input,
-  ).then((value) {
-    if (value != null) {
-      setState(() {
-        // Format the time in 24-hour format
-          final now = DateTime.now();
-        final dt = DateTime(now.year, now.month, now.day, value.hour, value.minute);
-        final format = DateFormat.Hm();  // Use 'Hm' for 24-hour format without seconds
-        selectedTime = format.format(dt);
-      });
-    }
-  });
-}
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return StatefulBuilder(
-        builder: (BuildContext context, StateSetter setState) {
-          return AlertDialog(
-            title: const Icon(
-              Icons.home,
-              size: 48.0, // Adjust size as needed
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Destination TextField
-                TextField(
-                  controller: destinationName,
-                  decoration: InputDecoration(
-                    labelText: 'Enter Destination',
-                    prefixIcon: const Icon(Icons.location_city),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.0),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                // Day Selection Button Bar
-                TextButton(
-                  onPressed: () => _showDatePicker(setState),
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                    backgroundColor: Colors.transparent,
-                    side: BorderSide(color: Colors.grey),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.0),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.calendar_month,
-                        color: Colors.black,
-                      ),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                          child: Text(
-                            selectedDay,
-                            style: const TextStyle(fontSize: 16.0, color: Colors.black),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                  TextButton(
-                  onPressed: () => _showTimePicker(setState),
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                    backgroundColor: Colors.transparent,
-                    side: BorderSide(color: Colors.grey),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.0),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.calendar_month,
-                        color: Colors.black,
-                      ),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                          child: Text(
-                            selectedTime,
-                            style: const TextStyle(fontSize: 16.0, color: Colors.black),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () async {
-                  await addData(_selectedKey, destinationName.text, selectedDay, selectedTime,_jsonData, widget.information);
-                  setState(() {
-                    _updateInformationCallback(_selectedKey);
-                  });
-                  Navigator.pop(context);
-                },
-                child: const Text('Add'),
-              ),
-            ],
-          );
-        },
-      );
-    },
-  );
-}
-
-
   void _updateTripCards() {
     setState(() {
       _tripCards = _jsonData.entries
@@ -572,15 +59,17 @@ void _showTimePicker(StateSetter setState) {
             {
             return TripCard(
               vacationName: entry.key,
-              dayRange: entry.value[0]['dataRange'],
+              dayRange: entry.value[0]['dateRange'],
               information: widget.information,
               onUpdateInformation: _updateInformationCallback, // Pass the callback function
+              jsonData: _jsonData,
+              items: widget.items,
             );
           }
           else
           {
             return FloatingActionButton(
-              onPressed: (){_addVacationForm(context);},
+              onPressed: (){addVacationForm(context, _jsonData, widget.information, _updateInformationCallback,false, widget.items);},
               child: Icon(Icons.add), // You can set any icon or text here
               backgroundColor: Color(0xFFB0C1BC),
             );
@@ -649,7 +138,12 @@ void _showTimePicker(StateSetter setState) {
     _informationLoaded = true; // Ensure information is marked as loaded
 
     // Cast the list to the correct type
+    try{
     _items = List<Map<String, dynamic>>.from(_jsonData[selectedKey] as List);
+    }catch (e) 
+    {
+      _informationLoaded = false;
+    }
         _reorderJsonDataByDayAndTime();
 
     _updateTripCards(); // Refresh the trip cards whenever the information is updated
@@ -659,12 +153,13 @@ void _showTimePicker(StateSetter setState) {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      
       backgroundColor: Color(0xFFE6EAE4),
       floatingActionButton: _informationLoaded
       ? FloatingActionButton(
           heroTag: "addButton",  // Assign a unique heroTag
           onPressed: () {
-            _addInformationForm(context);
+    addInformationForm(context, _selectedKey, _jsonData, widget.information, _updateInformationCallback);
             setState(() {
               _informationLoaded = false;
             });
@@ -751,14 +246,16 @@ class TripCard extends StatelessWidget {
   final String vacationName;
   final String dayRange;
   final List<Map<String, dynamic>> information;
-  final ValueChanged<String> onUpdateInformation; // Callback to handle refresh
+  final Function(String) onUpdateInformation; // Callback to handle refresh
+  final Map<String, dynamic> jsonData;
+  final List<Map<String, dynamic>> items;
 
   const TripCard({
     super.key,
     required this.vacationName,
     required this.dayRange,
     required this.information,
-    required this.onUpdateInformation,
+    required this.onUpdateInformation, required this.jsonData, required this.items
   });
 
   @override
@@ -817,7 +314,9 @@ class TripCard extends StatelessWidget {
                     size: 24,
                   ),
                   onPressed: () {
-                    // Define your onPressed action here
+                    information[0]['selectedKey'] = vacationName;
+
+                    addVacationForm(context, jsonData, information, onUpdateInformation, true, items);
                   },
                 ),
               ],
@@ -828,3 +327,389 @@ class TripCard extends StatelessWidget {
     );
   }
 }
+
+
+void addVacationForm(
+  BuildContext context,
+  Map<String, dynamic> jsonData,
+  List<Map<String, dynamic>> information,
+  Function(String) updateInformationCallback,
+  bool isAdjustment,
+   List<Map<String, dynamic>> items
+) {
+  TextEditingController vacationName = TextEditingController();
+  String? _startYear, _endYear;
+  String? _startMonth, _endMonth;
+  int _startDaysInMonth = 0, _endDaysInMonth = 0;
+  String? _startDay, _endDay;
+  int currentYear = DateTime.now().year;
+  List<String> years = List<String>.generate(11, (index) => (currentYear + index).toString());
+  Map<String, String> data;
+  
+    List<Map<String, int>> monthDays = [
+    {"January": 31},
+    {"February": 28},  // 29 in a leap year
+    {"March": 31},
+    {"April": 30},
+    {"May": 31},
+    {"June": 30},
+    {"July": 31},
+    {"August": 31},
+    {"September": 30},
+    {"October": 31},
+    {"November": 30},
+    {"December": 31}
+  ];
+
+
+  if (isAdjustment)
+  {
+    data = breakDownDateRange(jsonData[information[0]['selectedKey']][0]['dateRange']);
+    _startYear = data['startYear'];
+    _endYear = data['endYear'];
+    _startMonth = data['startMonth'];
+    _endMonth = data['endMonth'];
+    _startDay = data['startDay'];
+    _endDay = data['endDay'];
+     vacationName = TextEditingController(text: information[0]['selectedKey']);
+    _startDaysInMonth = monthDays.firstWhere((month) => month.keys.first == _startMonth).values.first;
+    if (_startMonth == "February") {
+      _startDaysInMonth = isLeapYear(_startYear) ? 29 : 28;
+    }
+
+    _endDaysInMonth = monthDays.firstWhere((month) => month.keys.first == _endMonth).values.first;
+    if (_endMonth == "February") {
+      _endDaysInMonth = isLeapYear(_endYear) ? 29 : 28;
+    }
+  }
+  
+
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        backgroundColor: Color(0xFFB0C1BC),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+        title: const Icon(Icons.home),
+        content: StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return SizedBox(
+              width: 280.0,
+              height: 350.0,
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 20.0),
+                    child: TextField(
+                      controller: vacationName,
+                      decoration: InputDecoration(
+                        labelText: 'Enter Vacation Name',
+                        prefixIcon: const Icon(Icons.flight),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.0),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("Start Time"),
+                      SizedBox(height: 8.0),
+                      Row(
+                        children: [
+                          // Start Year Dropdown
+                          Expanded(
+                            child: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 4.0),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey, width: 1.0),
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<String>(
+                                  isExpanded: true,
+                                  value: _startYear,
+                                  hint: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                    child: Text("Year", style: TextStyle(fontSize: 12.0)),
+                                  ),
+                                  items: years.map((year) {
+                                    return DropdownMenuItem<String>(
+                                      value: year,
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                        child: Text(year, style: TextStyle(fontSize: 12.0)),
+                                      ),
+                                    );
+                                  }).toList(),
+                                  onChanged: (String? newValue) {
+                                    setState(() {
+                                      _startYear = newValue;
+                                      if (_startMonth == "February") {
+                                        _startDaysInMonth = isLeapYear(_startYear) ? 29 : 28;
+                                      }
+                                    });
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 8.0),
+                          Expanded(
+                            child: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 4.0),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey, width: 1.0),
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<String>(
+                                  isExpanded: true,
+                                  value: _startMonth,
+                                  hint: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                    child: Text("Month", style: TextStyle(fontSize: 12.0)),
+                                  ),
+                                  items: monthDays.map((month) {
+                                    String value = month.keys.first;
+                                    return DropdownMenuItem<String>(
+                                      value: value,
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                        child: Text(value, style: TextStyle(fontSize: 12.0)),
+                                      ),
+                                    );
+                                  }).toList(),
+                                  onChanged: (String? newValue) {
+                                    setState(() {
+                                      _startMonth = newValue!;
+                                      _startDaysInMonth = monthDays.firstWhere((month) => month.keys.first == _startMonth).values.first;
+                                      if (_startMonth == "February") {
+                                        _startDaysInMonth = isLeapYear(_startYear) ? 29 : 28;
+                                      }
+                                      _startDay = null;
+                                    });
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 8.0),
+                          Expanded(
+                            child: _startMonth != null
+                                ? Container(
+                                    padding: EdgeInsets.symmetric(horizontal: 4.0),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: Colors.grey, width: 1.0),
+                                      borderRadius: BorderRadius.circular(8.0),
+                                    ),
+                                    child: DropdownButtonHideUnderline(
+                                      child: DropdownButton<String>(
+                                        isExpanded: true,
+                                        value: _startDay,
+                                        hint: Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                          child: Text(_startDay??'Day', style: TextStyle(fontSize: 12.0)),
+                                        ),
+                                        items: List.generate(_startDaysInMonth, (index) {
+                                          String day = (index + 1).toString();
+                                          return DropdownMenuItem<String>(
+                                            value: day,
+                                            child: Padding(
+                                              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                              child: Text(day, style: TextStyle(fontSize: 12.0)),
+                                            ),
+                                          );
+                                        }).toList(),
+                                        onChanged: (String? newValue) {
+                                          setState(() {
+                                            _startDay = newValue!;
+                                          });
+                                        },
+                                      ),
+                                    ),
+                                  )
+                                : SizedBox.shrink(),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 16.0),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("End Time"),
+                      SizedBox(height: 8.0),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 4.0),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey, width: 1.0),
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<String>(
+                                  isExpanded: true,
+                                  value: _endYear,
+                                  hint: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                    child: Text("Year", style: TextStyle(fontSize: 12.0)),
+                                  ),
+                                  items: years.map((year) {
+                                    return DropdownMenuItem<String>(
+                                      value: year,
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                        child: Text(year, style: TextStyle(fontSize: 12.0)),
+                                      ),
+                                    );
+                                  }).toList(),
+                                  onChanged: (String? newValue) {
+                                    setState(() {
+                                      _endYear = newValue;
+                                      if (_endMonth == "February") {
+                                        _endDaysInMonth = isLeapYear(_endYear) ? 29 : 28;
+                                      }
+                                    });
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 8.0),
+                          Expanded(
+                            child: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 4.0),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey, width: 1.0),
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<String>(
+                                  isExpanded: true,
+                                  value: _endMonth,
+                                  hint: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                    child: Text("Month", style: TextStyle(fontSize: 12.0)),
+                                  ),
+                                  items: monthDays.map((month) {
+                                    String value = month.keys.first;
+                                    return DropdownMenuItem<String>(
+                                      value: value,
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                        child: Text(value, style: TextStyle(fontSize: 12.0)),
+                                      ),
+                                    );
+                                  }).toList(),
+                                  onChanged: (String? newValue) {
+                                    setState(() {
+                                      _endMonth = newValue!;
+                                      _endDaysInMonth = monthDays.firstWhere((month) => month.keys.first == _endMonth).values.first;
+                                      if (_endMonth == "February") {
+                                        _endDaysInMonth = isLeapYear(_endYear) ? 29 : 28;
+                                      }
+                                      _endDay = null;
+                                    });
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 8.0),
+                          Expanded(
+                            child: _endMonth != null
+                                ? Container(
+                                    padding: EdgeInsets.symmetric(horizontal: 4.0),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: Colors.grey, width: 1.0),
+                                      borderRadius: BorderRadius.circular(8.0),
+                                    ),
+                                    child: DropdownButtonHideUnderline(
+                                      child: DropdownButton<String>(
+                                        isExpanded: true,
+                                        value: _endDay,
+                                        hint: Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                          child: Text(_endDay??'Day', style: TextStyle(fontSize: 12.0)),
+                                        ),
+                                        items: List.generate(_endDaysInMonth, (index) {
+                                          String day = (index + 1).toString();
+                                          return DropdownMenuItem<String>(
+                                            value: day,
+                                            child: Padding(
+                                              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                              child: Text(day, style: TextStyle(fontSize: 12.0)),
+                                            ),
+                                          );
+                                        }).toList(),
+                                        onChanged: (String? newValue) {
+                                          setState(() {
+                                            _endDay = newValue!;
+                                          });
+                                        },
+                                      ),
+                                    ),
+                                  )
+                                : SizedBox.shrink(),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+        actions: <Widget>[
+            isAdjustment ? Padding(
+              padding: const EdgeInsets.only(right: 16.0, bottom: 8.0),
+              child: FloatingActionButton(
+                onPressed: () {
+                  deleteData(vacationName.text, jsonData, items, information);
+                  updateInformationCallback(information[0]['selectedKey']);
+                  Navigator.pop(context); // For example, close the dialog
+                },
+                backgroundColor: Colors.red,
+                child: const Icon(Icons.close),
+              ),
+            ):SizedBox.shrink(),
+            Padding(
+              padding: const EdgeInsets.only(right: 16.0, bottom: 8.0),
+              child: FloatingActionButton(
+                onPressed: () async {
+                  if (vacationName.text.isEmpty || _startDay == null || _startMonth == null || _startDay == null ||
+                      _endYear == null || _endMonth == null || _endDay == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Please select valid start and end dates.')),
+                    );
+                  } else if(isAdjustment){
+                    final vacation = vacationName.text;
+                    adjustVacation(vacation, "$_startMonth $_startDay $_startYear-$_endMonth $_endDay $_endYear", jsonData, information,false);
+                    updateInformationCallback(vacation);
+                    Navigator.pop(context);
+                  }
+                  else {
+                    final vacation = vacationName.text;
+                    addData(vacation, "", "$_startMonth $_startDay $_startYear-$_endMonth $_endDay $_endYear", "", jsonData, information);
+                    updateInformationCallback(vacation);
+                    Navigator.pop(context);
+                  }
+                },
+                backgroundColor: Color(0xFFB0C1BC),
+                child: const Icon(Icons.add),
+              ),
+            ),
+],
+
+      );
+    },
+  );
+}
+
+

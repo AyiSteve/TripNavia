@@ -37,3 +37,43 @@ bool isLeapYear(year)
     }
 }
 
+Map<String, String> breakDownDateRange(String dateRange) {
+  // Split the date range into start and end parts
+  List<String> parts = dateRange.split('-');
+
+  if (parts.length != 2) {
+  return {
+    'startMonth': 'Month',
+    'startDay': 'Day',
+    'startYear': 'Year',
+    'endMonth': 'Month',
+    'endDay': 'Day',
+    'endYear': 'Year',
+  };  }
+
+  // Extract start and end date parts
+  String startDate = parts[0].trim(); // "March 7 2025"
+  String endDate = parts[1].trim(); // "March 9 2026"
+
+  // Split the start date into month, day, and year
+  List<String> startDateParts = startDate.split(' ');
+  String startMonth = startDateParts[0];
+  String startDay = startDateParts[1];
+  String startYear = startDateParts[2];
+
+  // Split the end date into month, day, and year
+  List<String> endDateParts = endDate.split(' ');
+  String endMonth = endDateParts[0];
+  String endDay = endDateParts[1];
+  String endYear = endDateParts[2];
+
+  // Return a map containing the extracted components
+  return {
+    'startMonth': startMonth,
+    'startDay': startDay,
+    'startYear': startYear,
+    'endMonth': endMonth,
+    'endDay': endDay,
+    'endYear': endYear,
+  };
+}
