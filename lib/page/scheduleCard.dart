@@ -330,7 +330,7 @@ void addInformationForm(
               child: FloatingActionButton(
                 onPressed: () async {
                 
-                  addData(selectedKey, destinationName.text, selectedDay, selectedTime, jsonData, information, item);
+                  await addData(selectedKey, destinationName.text, selectedDay, selectedTime, jsonData, information, item);
                   updateInformationCallback(selectedKey);
                   Navigator.pop(context);
                 },
