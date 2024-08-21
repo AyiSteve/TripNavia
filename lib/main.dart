@@ -6,10 +6,12 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:tripnavia/page/dataHandling.dart';
 import 'package:tripnavia/page/HomePage.dart';
-
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:tripnavia/page/mapPage.dart';
+import 'package:tripnavia/page/searchPage/searchPage.dart';
 
-void main() {
+void main() async {
+  await dotenv.load(fileName: ".env");
   runApp(MyApp());
 }
 
@@ -154,7 +156,7 @@ DateTime _parseDate(String date) {
   Widget _getBody() {
     return [
       HomePage(jsonData: _jsonData, items: _items, information: _information),
-      Icon(Icons.search, size: 50),
+      SearchPage(),
       MapPage(jsonData: _jsonData, items: _items, information: _information),
     ][currentPlace];
   }
