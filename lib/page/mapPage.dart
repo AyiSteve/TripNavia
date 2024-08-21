@@ -116,8 +116,8 @@ class _MapPageState extends State<MapPage> {
                       ),
                     ),
                                   SizedBox(height: 16),
-                      if (widget.information[0]['informationLoaded'])
-                      ScheduleList(items: widget.items),
+                      //if (widget.information[0]['informationLoaded'])
+                      //ScheduleList(items: widget.items),
                   ],
                 ),
               );

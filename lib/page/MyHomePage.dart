@@ -234,7 +234,7 @@ void _addInformationForm(BuildContext context) {
             actions: [
               TextButton(
                 onPressed: () async {
-                  await _addData(_selectedKey, destinationName.text, selectedDay, selectedTime);
+                  _addData(_selectedKey, destinationName.text, selectedDay, selectedTime);
                   setState(() {
                     _loadInformation();
                   });

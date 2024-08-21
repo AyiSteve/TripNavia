@@ -4,10 +4,13 @@ import 'package:tripnavia/page/addNRemove.dart';
 
 class ScheduleList extends StatefulWidget {
   final List<Map<String, dynamic>> items;
+  final Map<String, dynamic> jsonData;
+  final List<Map<String, dynamic>> information;
+  final Function(String) onUpdateInformation;
+
 
   const ScheduleList({
-    super.key,
-    required this.items,
+    super.key, required this.items, required this.jsonData, required this.information, required this.onUpdateInformation,
   });
 
   @override
@@ -48,10 +51,15 @@ class _ScheduleListState extends State<ScheduleList> {
           SizedBox(height: 16),
           Column(
             children: daysMap[_activeDay]?.map((item) {
-              return ScheduleCard(
+              return GestureDetector(
+                onTap: () {
+                  addInformationForm(context, item, widget.information[0]['selectedKey'], widget.jsonData, widget.information, widget.onUpdateInformation);
+                },
+                child: ScheduleCard(
                 destination: item['destination'] ?? 'Unknown',
                 date: item['date'] ?? 'Unknown',
                 time: item['time'] ?? 'Unknown',
+                ),
               );
             }).toList() ?? [],
           ),
@@ -75,11 +83,7 @@ class ScheduleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        
-      },
-      child: Container(
+    return Container(
       width: double.infinity,
       margin: EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16.0),
@@ -107,7 +111,7 @@ class ScheduleCard extends StatelessWidget {
           ),
         ],
       ),
-    ),
+  
     );
   }
 }
@@ -168,15 +172,22 @@ class TabButton extends StatelessWidget {
 
 void addInformationForm(
   BuildContext context,
+  Map<String, dynamic>? item,
   String selectedKey,
   Map<String, dynamic> jsonData,
   List<Map<String, dynamic>> information,
   Function(String) updateInformationCallback,
 ) {
-  final TextEditingController destinationName = TextEditingController();
+  TextEditingController destinationName = TextEditingController();
   String selectedDay = 'Select A Day';
   String selectedTime = 'Select A Time';
 
+  if (item != null)
+  {
+    destinationName = TextEditingController(text: item['destination']);
+    selectedDay = item['date'];
+    selectedTime = item['time'];
+  }
   void _showDatePicker(StateSetter setState) {
     showDatePicker(
       context: context,
@@ -215,6 +226,7 @@ void addInformationForm(
       return StatefulBuilder(
         builder: (BuildContext context, StateSetter setState) {
           return AlertDialog(
+            backgroundColor: Color(0xFFB0C1BC),
             title: const Icon(
               Icons.home,
               size: 48.0,
@@ -227,10 +239,15 @@ void addInformationForm(
                   controller: destinationName,
                   decoration: InputDecoration(
                     labelText: 'Enter Destination',
+                    floatingLabelStyle: TextStyle(color: Colors.black), 
+
                     prefixIcon: const Icon(Icons.location_city),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.0),
                     ),
+                    focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.black)
+                  ),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -256,7 +273,7 @@ void addInformationForm(
                           padding: const EdgeInsets.symmetric(horizontal: 12.0),
                           child: Text(
                             selectedDay,
-                            style: const TextStyle(fontSize: 16.0, color: Colors.black),
+                            style: const TextStyle(color: Colors.black),
                           ),
                         ),
                       ),
@@ -286,7 +303,7 @@ void addInformationForm(
                           padding: const EdgeInsets.symmetric(horizontal: 12.0),
                           child: Text(
                             selectedTime,
-                            style: const TextStyle(fontSize: 16.0, color: Colors.black),
+                            style: const TextStyle(color: Colors.black),
                           ),
                         ),
                       ),
@@ -296,13 +313,30 @@ void addInformationForm(
               ],
             ),
             actions: [
-              TextButton(
+              item!=null ? Padding(
+              padding: const EdgeInsets.only(right: 16.0, bottom: 8.0),
+              child: FloatingActionButton(
+                onPressed: () {
+                  deleteInformation(information[0]['selectedKey'], jsonData, item['destination']);
+                  updateInformationCallback('Select a Location');
+                  Navigator.pop(context); // For example, close the dialog
+                },
+                backgroundColor: Colors.red,
+                child: const Icon(Icons.close),
+              ),
+            ):SizedBox.shrink(),
+              Padding(
+              padding: const EdgeInsets.only(right: 16.0, bottom: 8.0),
+              child: FloatingActionButton(
                 onPressed: () async {
-                  await addData(selectedKey, destinationName.text, selectedDay, selectedTime, jsonData, information);
+                
+                  addData(selectedKey, destinationName.text, selectedDay, selectedTime, jsonData, information, item);
                   updateInformationCallback(selectedKey);
                   Navigator.pop(context);
                 },
-                child: const Text('Add'),
+                backgroundColor: Color(0xFFB0C1BC),
+                child: const Icon(Icons.add),
+              ),
               ),
             ],
           );

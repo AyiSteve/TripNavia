@@ -6,6 +6,7 @@ import 'package:tripnavia/page/dataHandling.dart';
 import 'package:tripnavia/page/scheduleCard.dart';
 import 'package:tripnavia/page/addNRemove.dart';
 import 'package:intl/intl.dart';  // Required for getting the current year
+import 'package:http/http.dart' as http;
 
 
 class HomePage extends StatefulWidget {
@@ -76,6 +77,7 @@ class HomePageState extends State<HomePage> {
           }
           })
           .toList();
+
     });
   }
 
@@ -135,19 +137,25 @@ class HomePageState extends State<HomePage> {
   setState(() {
     _selectedKey = selectedKey;
     widget.information[0]['selectedKey'] = selectedKey;
-    _informationLoaded = true; // Ensure information is marked as loaded
+    _informationLoaded = true; 
 
-    // Cast the list to the correct type
+    _reorderJsonDataByDayAndTime();
     try{
     _items = List<Map<String, dynamic>>.from(_jsonData[selectedKey] as List);
     }catch (e) 
     {
+      _items = [];
       _informationLoaded = false;
     }
-        _reorderJsonDataByDayAndTime();
+    
+    if (_items.length < 2)
+    {
+      _informationLoaded = false;
+
+    }
 
     _updateTripCards(); // Refresh the trip cards whenever the information is updated
-  });
+      });
 }
 
   @override
@@ -155,11 +163,11 @@ class HomePageState extends State<HomePage> {
     return Scaffold(
       
       backgroundColor: Color(0xFFE6EAE4),
-      floatingActionButton: _informationLoaded
+      floatingActionButton: _items.isNotEmpty
       ? FloatingActionButton(
           heroTag: "addButton",  // Assign a unique heroTag
           onPressed: () {
-    addInformationForm(context, _selectedKey, _jsonData, widget.information, _updateInformationCallback);
+    addInformationForm(context, null,_selectedKey, _jsonData, widget.information, _updateInformationCallback);
             setState(() {
               _informationLoaded = false;
             });
@@ -194,8 +202,7 @@ class HomePageState extends State<HomePage> {
                     onTap: () {
                       setState(() {
                         _activeTab = 'Active';
-                        _informationLoaded = false;
-                        _updateTripCards();
+                        _updateInformationCallback('Select a Location');
                       });
                     },
                   ),
@@ -205,8 +212,7 @@ class HomePageState extends State<HomePage> {
                     onTap: () {
                       setState(() {
                         _activeTab = 'Upcoming Trip';
-                        _informationLoaded = false;
-                        _updateTripCards();
+                        _updateInformationCallback('Select a Location');
                       });
                     },
                   ),
@@ -229,7 +235,8 @@ class HomePageState extends State<HomePage> {
                 ),
               ),
               SizedBox(height: 16),
-              if (_informationLoaded) ScheduleList(items: _items)
+              if (_informationLoaded) ScheduleList(items: _items,jsonData:_jsonData,information: widget.information, onUpdateInformation: _updateInformationCallback)
+              else if(_items.length == 1) Center(child: Text("Please add valid destination"))
               else Center(child: Text("Please Select A Schedule")),
               SizedBox(height: 32),
             ],
@@ -257,7 +264,6 @@ class TripCard extends StatelessWidget {
     required this.information,
     required this.onUpdateInformation, required this.jsonData, required this.items
   });
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -267,6 +273,7 @@ class TripCard extends StatelessWidget {
       },
       child: Container(
         width: 350, // Set a fixed width to make horizontal scrolling effective
+        height: 240,
         margin: const EdgeInsets.only(right: 16.0), // Add spacing between cards
         padding: const EdgeInsets.all(16.0),
         decoration: BoxDecoration(
@@ -277,13 +284,16 @@ class TripCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              height: 100,
+              height: 150,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
-                color: Colors.grey[300],
+                image: DecorationImage(
+                image: NetworkImage(jsonData[vacationName][0]['imageUrl']), 
+                fit: BoxFit.cover, 
+              ),
               ),
             ),
-            SizedBox(height: 16),
+            SizedBox(height: 7),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -293,7 +303,7 @@ class TripCard extends StatelessWidget {
                     Text(
                       vacationName,
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -301,7 +311,7 @@ class TripCard extends StatelessWidget {
                     Text(
                       dayRange,
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 11,
                         color: Colors.black54,
                       ),
                     ),
@@ -309,7 +319,7 @@ class TripCard extends StatelessWidget {
                 ),
                 IconButton(
                   icon: Icon(
-                    Icons.arrow_forward,
+                    Icons.edit,
                     color: Colors.black,
                     size: 24,
                   ),
@@ -345,7 +355,9 @@ void addVacationForm(
   int currentYear = DateTime.now().year;
   List<String> years = List<String>.generate(11, (index) => (currentYear + index).toString());
   Map<String, String> data;
-  
+  bool isSwitched = false;
+  bool oldSwitches = false;
+
     List<Map<String, int>> monthDays = [
     {"January": 31},
     {"February": 28},  // 29 in a leap year
@@ -381,6 +393,14 @@ void addVacationForm(
     if (_endMonth == "February") {
       _endDaysInMonth = isLeapYear(_endYear) ? 29 : 28;
     }
+
+    if (jsonData[information[0]['selectedKey']][0]['isActive'] == 'true')
+      isSwitched = true;
+
+    else
+      isSwitched = false;
+
+    oldSwitches = isSwitched;
   }
   
 
@@ -402,11 +422,17 @@ void addVacationForm(
                     padding: const EdgeInsets.only(bottom: 20.0),
                     child: TextField(
                       controller: vacationName,
+                      
                       decoration: InputDecoration(
                         labelText: 'Enter Vacation Name',
+                        floatingLabelStyle: TextStyle(color: Colors.black), 
+
                         prefixIcon: const Icon(Icons.flight),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12.0),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.black)
                         ),
                       ),
                     ),
@@ -657,11 +683,39 @@ void addVacationForm(
                                   )
                                 : SizedBox.shrink(),
                           ),
+
                         ],
                       ),
+
+                      
                     ],
+                    
                   ),
+            SizedBox(height: 10.0),
+
+           Row(
+          children: [
+            isAdjustment 
+              ? Expanded(child: Text('isActive?')) 
+              : SizedBox.shrink(),
+              
+            isAdjustment 
+              ? Expanded(
+                  child: Switch(
+                    value: isSwitched,
+                    onChanged: (value) {
+                      setState(() {
+                        isSwitched = value;
+                      });
+            },
+          ),
+        ) 
+      : SizedBox.shrink(),
+  ],
+)
+
                 ],
+                
               ),
             );
           },
@@ -671,7 +725,7 @@ void addVacationForm(
               padding: const EdgeInsets.only(right: 16.0, bottom: 8.0),
               child: FloatingActionButton(
                 onPressed: () {
-                  deleteData(vacationName.text, jsonData, items, information);
+                  deleteVacation(vacationName.text, jsonData, items, information);
                   updateInformationCallback(information[0]['selectedKey']);
                   Navigator.pop(context); // For example, close the dialog
                 },
@@ -686,18 +740,27 @@ void addVacationForm(
                   if (vacationName.text.isEmpty || _startDay == null || _startMonth == null || _startDay == null ||
                       _endYear == null || _endMonth == null || _endDay == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Please select valid start and end dates.')),
+                      SnackBar(content: Text('Please input valid information.')),
                     );
                   } else if(isAdjustment){
                     final vacation = vacationName.text;
-                    adjustVacation(vacation, "$_startMonth $_startDay $_startYear-$_endMonth $_endDay $_endYear", jsonData, information,false);
-                    updateInformationCallback(vacation);
+                    await adjustVacation(vacation, "$_startMonth $_startDay $_startYear-$_endMonth $_endDay $_endYear", jsonData, information,isSwitched);
+                    
+                    if(isSwitched != oldSwitches)
+                    {
+                       updateInformationCallback('Select A Location');
+                    }
+                    else
+                    {
+                       updateInformationCallback(vacation);
+
+                    }
                     Navigator.pop(context);
                   }
                   else {
                     final vacation = vacationName.text;
-                    addData(vacation, "", "$_startMonth $_startDay $_startYear-$_endMonth $_endDay $_endYear", "", jsonData, information);
-                    updateInformationCallback(vacation);
+                    await addData(vacation, "", "$_startMonth $_startDay $_startYear-$_endMonth $_endDay $_endYear", "", jsonData, information,null);
+                     updateInformationCallback(vacation);
                     Navigator.pop(context);
                   }
                 },

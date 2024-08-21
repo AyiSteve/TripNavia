@@ -52,8 +52,8 @@ Map<String, String> breakDownDateRange(String dateRange) {
   };  }
 
   // Extract start and end date parts
-  String startDate = parts[0].trim(); // "March 7 2025"
-  String endDate = parts[1].trim(); // "March 9 2026"
+  String startDate = parts[0].trim(); 
+  String endDate = parts[1].trim(); 
 
   // Split the start date into month, day, and year
   List<String> startDateParts = startDate.split(' ');
