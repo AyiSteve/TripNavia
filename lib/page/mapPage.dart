@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:tripnavia/page/addVacation.dart';
 import 'package:tripnavia/page/scheduleCard.dart';
 
 class MapPage extends StatefulWidget {
-  final Map<String, dynamic> jsonData;
-  final List<Map<String, dynamic>> items;
-  final List<Map<String, dynamic>> information;
+   Map<String, dynamic> jsonData;
+   List<Map<String, dynamic>> items;
+   List<Map<String, dynamic>> information;
 
-  const MapPage({
+   MapPage({
     Key? key,
     required this.jsonData,
     required this.items,
@@ -22,26 +23,29 @@ class _MapPageState extends State<MapPage> {
   GoogleMapController? _controller;
   final LatLng _initialPosition = LatLng(36.7783, -119.4179); // California coordinates
 
-  late Map<String, dynamic> _jsonData;
-  late List<Map<String, dynamic>> _items;
+  
   bool _isLoading = true;
-  String _selectedKey = 'Select a Location';
-  bool _informationLoaded = false;
 
   @override
   void initState() {
     super.initState();
-    _jsonData = widget.jsonData;
-    _items = widget.items;
+    widget.information[0]['selectedKey'] = widget.information[0]['selectedKey'] != 'Select a Location' ? widget.jsonData.keys.first : null;
+    widget.jsonData.remove('+');
+    update(widget.information[0]['selectedKey']);
   }
 
-  void update()
+  void update(String selectedKey)
   {
+    widget.information[0]['selectedKey'] = selectedKey;
     setState(() {
-    _jsonData = widget.jsonData;
-    _items = widget.items;
-    _informationLoaded = widget.information[0]['informationLoaded'];
-    _selectedKey = widget.information[0]['selectedKey'];
+    try{
+    widget.items = List<Map<String, dynamic>>.from(widget.jsonData[widget.information[0]['selectedKey']]as List);
+    widget.information[0]['informationLoaded'] = 'true';
+    }catch (e) 
+    {
+      widget.items = [];
+      widget.information[0]['informationLoaded'] = 'false';
+    }
     });
 
   }
@@ -66,12 +70,48 @@ class _MapPageState extends State<MapPage> {
           Positioned(
             top: 40.0,
             left: 20.0,
-            right: 20.0,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Icon(Icons.flight, size: 28),
-              ],
+            child: Container(
+              width: 200,
+              height:50,
+              decoration: BoxDecoration(
+                color: Color.fromARGB(255, 224, 236, 234),
+                  borderRadius: BorderRadius.circular(20),
+              
+              ),
+                child: Row(
+
+                  children:[
+                    SizedBox(width: 10),
+                    Icon(Icons.airplane_ticket),
+                    SizedBox(width: 10),
+                   DropdownButton<String>(
+                      value: widget.information[0]['selectedKey'], 
+                      hint: Text('Select/Add Here'),
+
+                      items: widget.jsonData.keys.map<DropdownMenuItem<String>>((String key) {
+                        return DropdownMenuItem<String>(
+                          value: key,
+                          child: Text(key), // Display the key as the dropdown item
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        if (newValue != null) {
+                          setState(() {
+                            widget.information[0]['selectedKey'] = newValue; // Update the selected value
+                          });
+
+                        
+                        }
+                      
+                         
+                        widget.information[0]['selectedKey']; 
+
+                      },
+                    ),
+
+                  ]
+                  
+                ),
             ),
           ),
 
@@ -83,7 +123,7 @@ class _MapPageState extends State<MapPage> {
             builder: (context, scrollController) {
               return Container(
                 decoration: BoxDecoration(
-                  color: Color(0xFFEFEFEF), // Light green background color
+                  color: Color.fromARGB(255, 224, 236, 234), // Light green background color
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(16.0),
                     topRight: Radius.circular(16.0),
@@ -103,7 +143,7 @@ class _MapPageState extends State<MapPage> {
                         ),
                       ),
                     ),
-                    if (widget.information[0]['informationLoaded'])
+                    if (widget.information[0]['informationLoaded'] == 'true')
                       entertainmentList(items: widget.items),
                     Padding(
                       padding: const EdgeInsets.all(16.0),
@@ -116,8 +156,8 @@ class _MapPageState extends State<MapPage> {
                       ),
                     ),
                                   SizedBox(height: 16),
-                      if (widget.information[0]['informationLoaded'])
-                      ScheduleList(items: widget.items),
+                     // if (widget.information[0]['informationLoaded'])
+                    //  ScheduleList(items: widget.items,jsonData:widget.jsonData,information: widget.information, onUpdateInformation: widget.information[0]['selectedKey'])
                   ],
                 ),
               );
@@ -156,18 +196,22 @@ class _entertainmentListState extends State<entertainmentList> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(height: 16),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
 
-            child: Row (
-              children: widget.items.map((item) {
-              return entertainmentCard(
-                destination: item['destination'] ?? 'Unknown',
-                date: item['date'] ?? 'Unknown',
-              );
-            }).toList() ?? [],
-          ),
+            child: widget.items.length > 1
+              ? Row(
+                  children: widget.items.skip(1).map((item) {
+                    return entertainmentCard(
+                      destination: item['destination'] ?? 'Unknown',
+                      date: item['date'] ?? 'Unknown',
+                    );
+                  }).toList(),
+                )
+              : Center(
+                  child: Text('Please add a valid destination'),
+                ),
+
           ),
         ],
       ),

@@ -28,13 +28,11 @@ class _MyAppState extends State<MyApp> {
   List<Map<String, dynamic>> _items = [];  // Items for the selected vacation
   List<Map<String, dynamic>> _information = [];  // Items for the selected vacation
   String _selectedKey = 'Select a Location';  // Currently selected vacation key
-  bool _informationLoaded = false;  // Controls whether the vacation details are displayed
 
   @override
   void initState() {
     super.initState();
     _loadData();  // Load the data when the app starts
-
   }
 
   /// Loads the JSON data from the storage file and updates the UI.
@@ -49,25 +47,14 @@ class _MyAppState extends State<MyApp> {
           // Write back to the JSON file after sorting
           saveDataToFile(json.encode(_jsonData));
           // Initialize the variables
-          _selectedKey = _jsonData.keys.isNotEmpty ? _jsonData.keys.first : 'Select a Location';
-          _items = List<Map<String, dynamic>>.from(_jsonData[_selectedKey] ?? []);
-          _informationLoaded = true;
-         _information.add({'selectedKey': _jsonData.keys.isNotEmpty ? _jsonData.keys.first : 'Select a Location', 'informationLoaded': true},);
+          _items = [];
+         _information.add({'selectedKey': 'Select a Location', 'informationLoaded': false},);
         });
     } catch (e) {
       print('Error loading JSON: $e');
     }
   }
 
-  /// Loads the information for the selected vacation key.
-  Future<void> _loadInformation() async {
-    if (_selectedKey == 'Select a Location') return;  // Skip if no valid key is selected
-
-    setState(() {
-      _items = List<Map<String, dynamic>>.from(_jsonData[_selectedKey] ?? []);
-      _informationLoaded = true;
-    });
-  }
 
   /// Reorders the JSON data by day and time.
   void _reorderJsonDataByDayAndTime() {
