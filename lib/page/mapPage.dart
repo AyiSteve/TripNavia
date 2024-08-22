@@ -35,7 +35,6 @@ class _MapPageState extends State<MapPage> {
     {
       update(widget.information[0]['selectedKey']);
     }
-    widget.jsonData.remove('+');
   }
 
   void update(String selectedKey)
@@ -93,7 +92,7 @@ class _MapPageState extends State<MapPage> {
                       value: widget.information[0]['selectedKey'], 
                       hint: Text('Select/Add Here'),
 
-                      items: widget.jsonData.keys.map<DropdownMenuItem<String>>((String key) {
+                      items: widget.jsonData.keys.take(widget.jsonData.keys.length - 1).map<DropdownMenuItem<String>>((String key) {
                         return DropdownMenuItem<String>(
                           value: key,
                           child: Text(key), // Display the key as the dropdown item
