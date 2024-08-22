@@ -1,15 +1,12 @@
-import 'dart:convert';
-import 'dart:io';
+
 
 import 'package:flutter/material.dart';
-import 'package:tripnavia/page/addVacation.dart';
-import 'package:tripnavia/page/dataHandling.dart';
-import 'package:tripnavia/page/scheduleCard.dart';
-import 'package:tripnavia/page/addNRemove.dart';
-import 'package:intl/intl.dart';  // Required for getting the current year
-import 'package:http/http.dart' as http;
+import 'package:tripnavia/page/subFileForHomePage/addVacation.dart';
+import 'package:tripnavia/page/subFileForHomePage/scheduleCard.dart';
+import 'package:intl/intl.dart';  
 
 
+// ignore: must_be_immutable
 class HomePage extends StatefulWidget {
    Map<String, dynamic> jsonData;
    List<Map<String, dynamic>> items;
@@ -40,10 +37,14 @@ class HomePageState extends State<HomePage>  {
     _updateInformationCallback(widget.information[0]['selectedKey']);
     widget.jsonData["+"] =[{'isActive':"false"}];
 
-    
     if(widget.information[0]['selectedKey'] != 'Select a Location')
     {
-      if(widget.items[0]['isActive'] == 'false')
+      if(widget.items[0]['isActive'] == 'false' )
+      // ignore: curly_braces_in_flow_control_structures
+      _activeTab = 'Upcoming Trip';
+    }
+    if (widget.jsonData.length < 1)
+    {
       _activeTab = 'Upcoming Trip';
     }
 
@@ -76,9 +77,9 @@ class HomePageState extends State<HomePage>  {
           else
           {
             return FloatingActionButton(
-              onPressed: (){addVacationForm(context, widget.jsonData, widget.information, _updateInformationCallback,false, widget.items);},
-              child: Icon(Icons.add), // You can set any icon or text here
-              backgroundColor: Color(0xFFB0C1BC),
+              onPressed: (){addVacationForm(context, widget.jsonData, widget.information, _updateInformationCallback,false, widget.items);}, 
+              backgroundColor: const Color(0xFFB0C1BC),
+              child: const Icon(Icons.add),
             );
           }
           })
@@ -96,6 +97,7 @@ class HomePageState extends State<HomePage>  {
     // Parse the date string
     return format.parse(date);
   } catch (e) {
+    // ignore: avoid_print
     print('Error parsing date: $e');
     // Return a default date far in the past if parsing fails
     return DateTime(1900);
@@ -108,8 +110,9 @@ class HomePageState extends State<HomePage>  {
       final parts = time.split(':');
       return DateTime(0, 1, 1, int.parse(parts[0]), int.parse(parts[1]));
     } catch (e) {
+      // ignore: avoid_print
       print('Error parsing time: $e');
-      // Handle invalid time format, returning midnight as default
+
       return DateTime(0, 1, 1, 0, 0);
     }
   }
@@ -169,7 +172,7 @@ class HomePageState extends State<HomePage>  {
   Widget build(BuildContext context) {
     return Scaffold(
       
-      backgroundColor: Color(0xFFE6EAE4),
+      backgroundColor: const Color(0xFFE6EAE4),
       floatingActionButton: widget.items.isNotEmpty
       ? FloatingActionButton(
           heroTag: "addButton",  // Assign a unique heroTag
@@ -182,24 +185,24 @@ class HomePageState extends State<HomePage>  {
           backgroundColor: const Color(0xFF93A8A2),
           child: const Icon(Icons.add),
         )
-      : null, // No button when information is not loaded
+      : null, 
 
-  floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,  // Bottom right of the screen
+  floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,  
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: 40),
-              Text(
+              const SizedBox(height: 40),
+              const Text(
                 'Hi\nName!',
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
@@ -225,27 +228,26 @@ class HomePageState extends State<HomePage>  {
                   ),
                 ],
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: _tripCards, // Display the trip cards in a row for horizontal scrolling
                 ),
               ),
-              SizedBox(height: 16),
-              SizedBox(height: 24),
-              Text(
+              const SizedBox(height: 40),
+              const Text(
                 'Schedule',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               if (widget.information[0]['informationLoaded'] == 'true') ScheduleList(items: widget.items,jsonData:widget.jsonData,information: widget.information, onUpdateInformation: _updateInformationCallback)
-              else if(widget.items.length == 1) Center(child: Text("Please add valid destination"))
-              else Center(child: Text("Please Select A Schedule")),
-              SizedBox(height: 32),
+              else if(widget.items.length == 1) const Center(child: Text("Please add valid destination"))
+              else const Center(child: Text("Please Select A Schedule")),
+              const SizedBox(height: 32),
             ],
           ),
           
@@ -256,97 +258,5 @@ class HomePageState extends State<HomePage>  {
   }
   
 }
-
-class TripCard extends StatelessWidget {
-  final String vacationName;
-  final String dayRange;
-  final List<Map<String, dynamic>> information;
-  final Function(String) onUpdateInformation; // Callback to handle refresh
-  final Map<String, dynamic> jsonData;
-  final List<Map<String, dynamic>> items;
-
-  const TripCard({
-    super.key,
-    required this.vacationName,
-    required this.dayRange,
-    required this.information,
-    required this.onUpdateInformation, required this.jsonData, required this.items
-  });
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        information[0]['selectedKey'] = vacationName;
-        onUpdateInformation(vacationName); // Use callback to update and refresh
-      },
-      child: Container(
-        width: 350, // Set a fixed width to make horizontal scrolling effective
-        height: 240,
-        margin: const EdgeInsets.only(right: 16.0), // Add spacing between cards
-        padding: const EdgeInsets.all(16.0),
-        decoration: BoxDecoration(
-          color: Color(0xFFB0C1BC),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              height: 150,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                image: DecorationImage(
-                image: NetworkImage(jsonData[vacationName][0]['imageUrl']), 
-                fit: BoxFit.cover, 
-              ),
-              ),
-            ),
-            SizedBox(height: 7),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      vacationName,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      dayRange,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.black54,
-                      ),
-                    ),
-                  ],
-                ),
-                IconButton(
-                  icon: Icon(
-                    Icons.edit,
-                    color: Colors.black,
-                    size: 24,
-                  ),
-                  onPressed: () {
-                    information[0]['selectedKey'] = vacationName;
-
-                    addVacationForm(context, jsonData, information, onUpdateInformation, true, items);
-                  },
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-
-
 
 

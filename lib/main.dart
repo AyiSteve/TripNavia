@@ -41,14 +41,14 @@ class _MyAppState extends State<MyApp> {
       final String response = await rootBundle.loadString('assets/storage.json');
         setState(() {
           _jsonData = json.decode(response);
-          
-          _reorderJsonDataByDayAndTime();
+          _jsonData["+"] =[{'isActive':"false"}];
 
+          _reorderJsonDataByDayAndTime();
+          _items = [];
+          _information.add({'selectedKey': 'Select a Location', 'informationLoaded': false},);
           // Write back to the JSON file after sorting
           saveDataToFile(json.encode(_jsonData));
-          // Initialize the variables
-          _items = [];
-         _information.add({'selectedKey': 'Select a Location', 'informationLoaded': false},);
+          
         });
     } catch (e) {
       print('Error loading JSON: $e');

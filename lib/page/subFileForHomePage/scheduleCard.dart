@@ -318,7 +318,7 @@ void addInformationForm(
               child: FloatingActionButton(
                 onPressed: () {
                   deleteInformation(information[0]['selectedKey'], jsonData, item['destination']);
-                  updateInformationCallback('Select a Location');
+                  updateInformationCallback(information[0]['selectedKey']);
                   Navigator.pop(context); // For example, close the dialog
                 },
                 backgroundColor: Colors.red,

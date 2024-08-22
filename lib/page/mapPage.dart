@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:tripnavia/page/addVacation.dart';
-import 'package:tripnavia/page/scheduleCard.dart';
+import 'package:tripnavia/page/subFileForHomePage/scheduleCard.dart';
 
 class MapPage extends StatefulWidget {
    Map<String, dynamic> jsonData;
@@ -23,21 +22,27 @@ class _MapPageState extends State<MapPage> {
   GoogleMapController? _controller;
   final LatLng _initialPosition = LatLng(36.7783, -119.4179); // California coordinates
 
-  
-  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    widget.information[0]['selectedKey'] = widget.information[0]['selectedKey'] != 'Select a Location' ? widget.jsonData.keys.first : null;
+    if (widget.information[0]['selectedKey'] == 'Select a Location')
+    {
+    widget.information[0]['selectedKey'] = null;
+    }
+
+    else
+    {
+      update(widget.information[0]['selectedKey']);
+    }
     widget.jsonData.remove('+');
-    update(widget.information[0]['selectedKey']);
   }
 
   void update(String selectedKey)
   {
-    widget.information[0]['selectedKey'] = selectedKey;
     setState(() {
+          widget.information[0]['selectedKey'] = selectedKey;
+
     try{
     widget.items = List<Map<String, dynamic>>.from(widget.jsonData[widget.information[0]['selectedKey']]as List);
     widget.information[0]['informationLoaded'] = 'true';
@@ -96,16 +101,10 @@ class _MapPageState extends State<MapPage> {
                       }).toList(),
                       onChanged: (String? newValue) {
                         if (newValue != null) {
-                          setState(() {
-                            widget.information[0]['selectedKey'] = newValue; // Update the selected value
-                          });
+                  
+                          update(newValue);
 
-                        
                         }
-                      
-                         
-                        widget.information[0]['selectedKey']; 
-
                       },
                     ),
 
@@ -155,9 +154,9 @@ class _MapPageState extends State<MapPage> {
                         ),
                       ),
                     ),
-                                  SizedBox(height: 16),
-                     // if (widget.information[0]['informationLoaded'])
-                    //  ScheduleList(items: widget.items,jsonData:widget.jsonData,information: widget.information, onUpdateInformation: widget.information[0]['selectedKey'])
+                                  SizedBox(height: 12),
+                     if (widget.information[0]['informationLoaded'] == 'true')
+                    ScheduleList(items: widget.items,jsonData:widget.jsonData,information: widget.information, onUpdateInformation: update)
                   ],
                 ),
               );
@@ -186,14 +185,7 @@ class _entertainmentListState extends State<entertainmentList> {
   @override
   Widget build(BuildContext context) {
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: Color(0xFFB0C1BC),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
+    return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SingleChildScrollView(
@@ -205,6 +197,7 @@ class _entertainmentListState extends State<entertainmentList> {
                     return entertainmentCard(
                       destination: item['destination'] ?? 'Unknown',
                       date: item['date'] ?? 'Unknown',
+                      imageUrl: item['imageUrl'] ?? 'Unknown',
                     );
                   }).toList(),
                 )
@@ -214,19 +207,20 @@ class _entertainmentListState extends State<entertainmentList> {
 
           ),
         ],
-      ),
-    );
+      );
+    
   }
 }
 
 class entertainmentCard extends StatelessWidget {
   final String destination;
   final String date;
-
+  final String imageUrl;
+  
   const entertainmentCard({
     Key? key,
     required this.destination,
-    required this.date,
+    required this.date, required this.imageUrl,
   }) : super(key: key);
 
   @override
@@ -238,10 +232,10 @@ class entertainmentCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.grey[300],
         borderRadius: BorderRadius.circular(20.0), // Rounded corners
-      // image: DecorationImage(
-      //    image: AssetImage('assets/your_image.png'), // Replace with your image asset
-       //   fit: BoxFit.cover,
-      //  ),
+      image: DecorationImage(
+                image: NetworkImage(imageUrl), 
+                fit: BoxFit.cover, 
+              ),
       ),
       child: Align(
         alignment: Alignment.bottomLeft,
@@ -275,5 +269,3 @@ class entertainmentCard extends StatelessWidget {
     );
   }
 }
-
-

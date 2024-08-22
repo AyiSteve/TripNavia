@@ -1,6 +1,9 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
+import 'package:http/http.dart' as http;
+
 
 Future<void> saveDataToFile(String jsonData) async {
   final directory = await getApplicationDocumentsDirectory();  // Get the app's documents directory
@@ -76,4 +79,27 @@ Map<String, String> breakDownDateRange(String dateRange) {
     'endDay': endDay,
     'endYear': endYear,
   };
+}
+
+
+Future<String> getUrl (String name)
+async {
+const String apiKey = 'TsEh7T77K3BRAhpADlCoi55NqfslDWVOO5SWhcALXWqg3NiVcTeyFYSS';
+
+
+    final url = Uri.parse('https://api.pexels.com/v1/search?query=$name&per_page=1');
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': apiKey, // Add your Pexels API key here
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = jsonDecode(response.body);
+        return data['photos'][0]['src']['large'];
+    } else {
+      throw Exception('Failed to load images');
+    }
 }

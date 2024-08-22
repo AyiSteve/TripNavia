@@ -17,38 +17,21 @@ Future<void> addData(
 ) async {
   bool found = true;
 
+
+
+    
   
 
   try {
     final data = jsonData;
 
     if (!data.containsKey(vacationName)) {
-        String imageUrl = '';
-  bool isLoading = true;
-
-
-    const String apiKey = 'TsEh7T77K3BRAhpADlCoi55NqfslDWVOO5SWhcALXWqg3NiVcTeyFYSS';
-    final url = Uri.parse('https://api.pexels.com/v1/search?query=$vacationName&per_page=1');
-
-    final response = await http.get(
-      url,
-      headers: {
-        'Authorization': apiKey, // Add your Pexels API key here
-      },
-    );
-
-    if (response.statusCode == 200) {
-      final Map<String, dynamic> data = jsonDecode(response.body);
-        imageUrl = data['photos'][0]['src']['large'];
-        isLoading = false;
-    } else {
-      throw Exception('Failed to load images');
-    }
+        
   
 
       // If vacationName doesn't exist, create a new entry
       data[vacationName] = [
-        {'isActive': "false", 'dateRange': date, 'imageUrl':imageUrl},
+        {'isActive': "false", 'dateRange': date, 'imageUrl':await getUrl(vacationName)},
       ];
     } else {
 
@@ -58,6 +41,7 @@ Future<void> addData(
             'destination': destination,
             'date': date,
             'time': time,
+            'imageUrl':await getUrl(destination)
           });
         }
 
@@ -68,6 +52,7 @@ Future<void> addData(
             'destination': destination,
             'date': date,
             'time': time,
+            'imageUrl':await getUrl(destination)
           });
         }
       
