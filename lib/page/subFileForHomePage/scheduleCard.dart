@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:intl/intl.dart';
 import 'package:tripnavia/page/addNRemove.dart';
+import 'package:tripnavia/page/dataHandling.dart';
+
+
 
 class ScheduleList extends StatefulWidget {
   final List<Map<String, dynamic>> items;
@@ -97,7 +101,7 @@ class ScheduleCard extends StatelessWidget {
           Text(
             destination,
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 14,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -105,7 +109,7 @@ class ScheduleCard extends StatelessWidget {
           Text(
             '$time ($date)',
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 11,
               color: Colors.black54,
             ),
           ),
@@ -159,7 +163,7 @@ class TabButton extends StatelessWidget {
         child: Text(
           title,
           style: TextStyle(
-            fontSize: 16,
+            fontSize: isActive ? 16:14,
             fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
             color: isActive ? Colors.black : Colors.grey,
           ),
@@ -168,6 +172,7 @@ class TabButton extends StatelessWidget {
     );
   }
 }
+
 
 
 void addInformationForm(
@@ -220,6 +225,8 @@ void addInformationForm(
     });
   }
 
+    
+
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -235,21 +242,39 @@ void addInformationForm(
               mainAxisSize: MainAxisSize.min,
               children: [
                 // Destination TextField
-                TextField(
-                  controller: destinationName,
-                  decoration: InputDecoration(
-                    labelText: 'Enter Destination',
-                    floatingLabelStyle: TextStyle(color: Colors.black), 
-
-                    prefixIcon: const Icon(Icons.location_city),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.0),
+                 TypeAheadField<String>(
+                    textFieldConfiguration: TextFieldConfiguration(
+                      controller: destinationName,  // Attach the TextEditingController here
+                      decoration: InputDecoration(
+                        labelText: 'Input Destination',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide(
+                              color: Colors.black, 
+                            ),
+                          ),
+                        prefixIcon: Icon(Icons.location_city),
+                      ),
                     ),
-                    focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.black)
+                    suggestionsCallback: (pattern) async {
+                      if (pattern.isEmpty) {
+                        return [];
+                      }
+                      return await fetchPlaceSuggestions(pattern);
+                    },
+                    itemBuilder: (context, suggestion) {
+                      return ListTile(
+                        leading: Icon(Icons.location_on),
+                        title: Text(suggestion),
+                      );
+                    },
+                    onSuggestionSelected: (suggestion) {
+                      destinationName.text = suggestion;
+                    },
                   ),
-                  ),
-                ),
                 const SizedBox(height: 20),
                 // Day Selection Button
                 TextButton(

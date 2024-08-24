@@ -239,7 +239,7 @@ class HomePageState extends State<HomePage>  {
               const Text(
                 'Schedule',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 17,
                   fontWeight: FontWeight.bold,
                 ),
               ),

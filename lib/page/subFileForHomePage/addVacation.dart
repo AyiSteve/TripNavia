@@ -1,6 +1,14 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:tripnavia/page/addNRemove.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:tripnavia/page/dataHandling.dart';
+import 'package:http/http.dart' as http;
+
+final apiKeyPlaces = dotenv.env['places_API_KEY'];
+
 class TripCard extends StatelessWidget {
   final String vacationName;
   final String dayRange;
@@ -16,6 +24,8 @@ class TripCard extends StatelessWidget {
     required this.information,
     required this.onUpdateInformation, required this.jsonData, required this.items
   });
+
+  
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -158,6 +168,18 @@ void addVacationForm(
     oldSwitches = isSwitched;
   }
   
+    Future<List<String>> fetchPlaceSuggestions(String input) async {
+    final String url =
+        'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$input&key=$apiKeyPlaces';
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final suggestions = data['predictions'] as List;
+      return suggestions.map((suggestion) => suggestion['description'] as String).toList();
+    } else {
+      throw Exception('Failed to fetch suggestions');
+    }
+  }
 
   showDialog(
     context: context,
@@ -175,22 +197,40 @@ void addVacationForm(
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(bottom: 20.0),
-                    child: TextField(
-                      controller: vacationName,
-                      
+                    child: TypeAheadField<String>(
+                    textFieldConfiguration: TextFieldConfiguration(
+                      controller: vacationName,  
                       decoration: InputDecoration(
-                        labelText: 'Enter Vacation Name',
-                        floatingLabelStyle: TextStyle(color: Colors.black), 
-
-                        prefixIcon: const Icon(Icons.flight),
+                        hintText: 'Input Vacation',
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.0),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.black)
-                        ),
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide(
+                              color: Colors.black, 
+                            ),
+                          ),
+                        prefixIcon: Icon(Icons.flight),
                       ),
                     ),
+                    suggestionsCallback: (pattern) async {
+                      if (pattern.isEmpty) {
+                        return [];
+                      }
+                      return await fetchPlaceSuggestions(pattern);
+                    },
+                    itemBuilder: (context, suggestion) {
+                      return ListTile(
+                        leading: Icon(Icons.location_on),
+                        title: Text(suggestion),
+                      );
+                    },
+                    onSuggestionSelected: (suggestion) {
+                      vacationName.text = suggestion;
+                    },
+                  ),
+                  
                   ),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

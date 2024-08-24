@@ -1,8 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
+
+final apiKeyPicture = dotenv.env['Picture_API_KEY'];
+
+final apiKeyPlaces = dotenv.env['places_API_KEY'];
 
 
 Future<void> saveDataToFile(String jsonData) async {
@@ -84,15 +90,12 @@ Map<String, String> breakDownDateRange(String dateRange) {
 
 Future<String> getUrl (String name)
 async {
-const String apiKey = 'TsEh7T77K3BRAhpADlCoi55NqfslDWVOO5SWhcALXWqg3NiVcTeyFYSS';
-
-
     final url = Uri.parse('https://api.pexels.com/v1/search?query=$name&per_page=1');
 
     final response = await http.get(
       url,
       headers: {
-        'Authorization': apiKey, // Add your Pexels API key here
+        'Authorization': '$apiKeyPicture', 
       },
     );
 
@@ -102,4 +105,48 @@ const String apiKey = 'TsEh7T77K3BRAhpADlCoi55NqfslDWVOO5SWhcALXWqg3NiVcTeyFYSS'
     } else {
       throw Exception('Failed to load images');
     }
+}
+
+  Future<List<String>> fetchPlaceSuggestions(String input) async {
+    final String url =
+        'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$input&key=$apiKeyPlaces';
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final suggestions = data['predictions'] as List;
+      return suggestions.map((suggestion) => suggestion['description'] as String).toList();
+    } else {
+      throw Exception('Failed to fetch suggestions');
+    }
+  }
+
+  Future<LatLng?> getLatLngFromGeocodingAPI(String address) async {
+  final url = Uri.parse(
+      'https://maps.googleapis.com/maps/api/geocode/json?address=${Uri.encodeComponent(address)}&key=$apiKeyPlaces');
+
+  try {
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+
+      if (data['status'] == 'OK') {
+        final location = data['results'][0]['geometry']['location'];
+        final lat = location['lat'];
+        final lng = location['lng'];
+
+        print('Geocoded address $address to: $lat, $lng');
+        return LatLng(lat, lng);
+      } else {
+        print('Geocoding API error: ${data['status']}');
+        return null;
+      }
+    } else {
+      print('Failed to connect to the API: ${response.statusCode}');
+      return null;
+    }
+  } catch (e) {
+    print('Error during geocoding: $e');
+    return null;
+  }
 }
