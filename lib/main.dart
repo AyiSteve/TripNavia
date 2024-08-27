@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:tripnavia/page/dataHandling.dart';
 import 'package:tripnavia/page/HomePage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -35,25 +36,63 @@ class _MyAppState extends State<MyApp> {
     _loadData();  // Load the data when the app starts
   }
 
-  /// Loads the JSON data from the storage file and updates the UI.
-  Future<void> _loadData() async {
-    try {
-      final String response = await rootBundle.loadString('assets/storage.json');
-        setState(() {
-          _jsonData = json.decode(response);
-          _jsonData["+"] =[{'isActive':"false"}];
 
-          _reorderJsonDataByDayAndTime();
-          _items = [];
-          _information.add({'selectedKey': 'Select a Location', 'informationLoaded': false},);
-          // Write back to the JSON file after sorting
-          saveDataToFile(json.encode(_jsonData));
-          
+
+/// Loads the JSON data from the storage file and updates the UI.
+Future<void> _loadData() async {
+  try {
+    // Get the application's documents directory
+    final directory = await getApplicationDocumentsDirectory();
+
+    // Define the path to the storage file
+    final path = '${directory.path}/storage.json';
+
+    // Check if the file exists
+    final file = File(path);
+    if (await file.exists()) {
+      // Read the JSON data from the file
+      final String response = await file.readAsString();
+
+      setState(() {
+        // Decode the JSON data into a map
+        _jsonData = json.decode(response);
+
+        // Add a default entry to the JSON data
+        _jsonData["+"] = [{'isActive': "false"}];
+
+        // Reorder the JSON data by day and time
+        _reorderJsonDataByDayAndTime();
+
+        // Clear the _items list
+        _items = [];
+
+        // Add a default entry to the _information list
+        _information.add({
+          'selectedKey': 'Select a Location',
+          'informationLoaded': false,
         });
-    } catch (e) {
-      print('Error loading JSON: $e');
+
+        // Write the updated JSON data back to the file after sorting
+        saveDataToFile(json.encode(_jsonData));
+      });
+    } else {
+      print('Storage file not found, using default values.');
+      // Handle the case where the file doesn't exist
+      setState(() {
+        _jsonData = {};
+        _jsonData["+"] = [{'isActive': "false"}];
+        _items = [];
+        _information.add({
+          'selectedKey': 'Select a Location',
+          'informationLoaded': false,
+        });
+      });
     }
+  } catch (e) {
+    print('Error loading JSON: $e');
   }
+}
+
 
 
   /// Reorders the JSON data by day and time.

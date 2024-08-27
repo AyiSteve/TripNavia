@@ -28,75 +28,79 @@ class TripCard extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        information[0]['selectedKey'] = vacationName;
-        onUpdateInformation(vacationName); // Use callback to update and refresh
-      },
-      child: Container(
-        width: 350, // Set a fixed width to make horizontal scrolling effective
-        height: 240,
-        margin: const EdgeInsets.only(right: 16.0), // Add spacing between cards
-        padding: const EdgeInsets.all(16.0),
-        decoration: BoxDecoration(
-          color: Color(0xFFB0C1BC),
-          borderRadius: BorderRadius.circular(20),
+   return GestureDetector(
+  onTap: () {
+    information[0]['selectedKey'] = vacationName;
+    onUpdateInformation(vacationName); // Use callback to update and refresh
+  },
+  child: Container(
+    width: 350, // Set a fixed width to make horizontal scrolling effective
+    height: 240,
+    margin: const EdgeInsets.only(right: 16.0), // Add spacing between cards
+    padding: const EdgeInsets.all(16.0),
+    decoration: BoxDecoration(
+      color: Color(0xFFB0C1BC),
+      borderRadius: BorderRadius.circular(20),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          height: 150,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            image: DecorationImage(
+              image: NetworkImage(jsonData[vacationName][0]['imageUrl']),
+              fit: BoxFit.cover,
+            ),
+          ),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        SizedBox(height: 7),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Container(
-              height: 150,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                image: DecorationImage(
-                image: NetworkImage(jsonData[vacationName][0]['imageUrl']), 
-                fit: BoxFit.cover, 
-              ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    vacationName,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    dayRange,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.black54,
+                    ),
+                  ),
+                ],
               ),
             ),
-            SizedBox(height: 7),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      vacationName,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      dayRange,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.black54,
-                      ),
-                    ),
-                  ],
-                ),
-                IconButton(
-                  icon: Icon(
-                    Icons.edit,
-                    color: Colors.black,
-                    size: 24,
-                  ),
-                  onPressed: () {
-                    information[0]['selectedKey'] = vacationName;
-
-                    addVacationForm(context, jsonData, information, onUpdateInformation, true, items);
-                  },
-                ),
-              ],
+            IconButton(
+              icon: Icon(
+                Icons.edit,
+                color: Colors.black,
+                size: 24,
+              ),
+              onPressed: () {
+                information[0]['selectedKey'] = vacationName;
+                addVacationForm(context, jsonData, information, onUpdateInformation, true, items);
+              },
             ),
           ],
         ),
-      ),
-    );
+      ],
+    ),
+  ),
+);
+
   }
 }
 
@@ -298,7 +302,7 @@ void addVacationForm(
                                       value: value,
                                       child: Padding(
                                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                        child: Text(value, style: TextStyle(fontSize: 12.0)),
+                                        child: Text(value, style: TextStyle(fontSize: 12.0), maxLines: 1, overflow: TextOverflow.ellipsis),
                                       ),
                                     );
                                   }).toList(),
@@ -423,7 +427,7 @@ void addVacationForm(
                                       value: value,
                                       child: Padding(
                                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                        child: Text(value, style: TextStyle(fontSize: 12.0)),
+                                        child: Text(value, style: TextStyle(fontSize: 12.0), maxLines: 1, overflow: TextOverflow.ellipsis),
                                       ),
                                     );
                                   }).toList(),
@@ -521,7 +525,7 @@ void addVacationForm(
               child: FloatingActionButton(
                 onPressed: () {
                   deleteVacation(vacationName.text, jsonData, items, information);
-                  updateInformationCallback(information[0]['selectedKey']);
+                  updateInformationCallback('Select a Location');
                   Navigator.pop(context); // For example, close the dialog
                 },
                 backgroundColor: Colors.red,

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:path_provider/path_provider.dart';
 import 'package:tripnavia/page/dataHandling.dart';
 import 'package:http/http.dart' as http;
 
@@ -12,58 +13,49 @@ Future<void> addData(
   String time,
   Map<String, dynamic> jsonData,
   List<Map<String, dynamic>> information,
-  Map<String, dynamic>? OldItem,
-
+  Map<String, dynamic>? oldItem,
 ) async {
-  bool found = true;
-
-
-
-    
-  
-
   try {
-    final data = jsonData;
-
-    if (!data.containsKey(vacationName)) {
-        
-  
-
-      // If vacationName doesn't exist, create a new entry
-      data[vacationName] = [
-        {'isActive': "false", 'dateRange': date, 'imageUrl':await getUrl(vacationName)},
+    // If vacationName doesn't exist, create a new entry
+    if (!jsonData.containsKey(vacationName)) {
+      jsonData[vacationName] = [
+        {
+          'isActive': "false",
+          'dateRange': date,
+          'imageUrl': await getUrl(vacationName),
+        },
       ];
     } else {
-
-        if (OldItem == null) {
-          // If no matching entry was found, add a new one
-          data[vacationName].add({
-            'destination': destination,
-            'date': date,
-            'time': time,
-            'imageUrl':await getUrl(destination)
-          });
-        }
-
-        else
-        {
-          data[information[0]['selectedKey']].removeWhere((item) => item["destination"] == OldItem?['destination']);
-            data[vacationName].add({
-            'destination': destination,
-            'date': date,
-            'time': time,
-            'imageUrl':await getUrl(destination)
-          });
-        }
-      
+      if (oldItem == null) {
+        // If no matching entry was found, add a new one
+        jsonData[vacationName].add({
+          'destination': destination,
+          'date': date,
+          'time': time,
+          'imageUrl': await getUrl(destination),
+        });
+      } else {
+        // Update the existing entry by removing the old one and adding the new one
+        jsonData[information[0]['selectedKey']]
+            .removeWhere((item) => item['destination'] == oldItem['destination']);
+        jsonData[vacationName].add({
+          'destination': destination,
+          'date': date,
+          'time': time,
+          'imageUrl': await getUrl(destination),
+        });
+      }
     }
 
     // Remove the "+" key and reset it afterward
     jsonData.remove('+');
-    saveDataToFile(json.encode(data));
-    jsonData["+"] = [{'isActive': "false"}];
+    await saveDataToFile(json.encode(jsonData));
+    jsonData["+"] = [
+      {'isActive': "false"}
+    ];
 
-    jsonData = data;
+    // Update the jsonData with the new data
+    jsonData = Map<String, dynamic>.from(jsonData);
   } catch (e) {
     print('Error saving data: $e');
   }
@@ -77,40 +69,53 @@ Future<void> adjustVacation(
   bool isActive,
 ) async {
   try {
-    final data = jsonData;
-      var tempStorage = jsonData[information[0]['selectedKey']];
-      // If vacationName doesn't exist, create a new entry
-      data.remove(information[0]['selectedKey']);
-      data[vacationName] = tempStorage;
+    // Retrieve the data associated with the selected vacation
+    var tempStorage = jsonData[information[0]['selectedKey']];
 
-      data[vacationName][0]['dateRange']=date;
-      data[vacationName][0]['isActive']=isActive.toString();
+    // Remove the old vacation entry from the data
+    jsonData.remove(information[0]['selectedKey']);
 
+    // Add the vacation data under the new vacationName
+    jsonData[vacationName] = tempStorage;
+
+    // Update the dateRange and isActive fields
+    jsonData[vacationName][0]['dateRange'] = date;
+    jsonData[vacationName][0]['isActive'] = isActive.toString();
+
+    // Remove the "+" key and reset it afterward
     jsonData.remove('+');
-    saveDataToFile(json.encode(data));
-    jsonData["+"] = [{'isActive': "false"}];
-    
-    jsonData = data;
+    await saveDataToFile(json.encode(jsonData));
+    jsonData["+"] = [
+      {'isActive': "false"}
+    ];
+
+    // Update jsonData with the new data
+    jsonData = Map<String, dynamic>.from(jsonData);
   } catch (e) {
     print('Error saving data: $e');
   }
 }
 
-  /// Deletes a vacation entry from the JSON file.
-  Future<void> deleteVacation(String vacationName, Map<String, dynamic> jsonData, List<Map<String, dynamic>> items, List<Map<String, dynamic>> information) async {
-    try {
-      final data = jsonData;
+/// Deletes a vacation entry from the JSON file.
+Future<void> deleteVacation(
+  String vacationName,
+  Map<String, dynamic> jsonData,
+  List<Map<String, dynamic>> items,
+  List<Map<String, dynamic>> information,
+) async {
+  try {
+    // Remove the vacation entry from the data
+    jsonData.remove(vacationName);
 
-      data.remove(vacationName);
+    // Save the updated data to the file
+    await saveDataToFile(json.encode(jsonData));
 
-      saveDataToFile(json.encode(jsonData));
-
-
-    jsonData = data;
-    } catch (e) {
-      print('Error deleting data: $e');
-    }
+    print('Vacation "$vacationName" deleted successfully.');
+  } catch (e) {
+    print('Error deleting data: $e');
   }
+}
+
 
    /// Deletes a vacation entry from the JSON file.
   Future<void> deleteInformation(String vacationName, Map<String, dynamic> jsonData, String destination) async {

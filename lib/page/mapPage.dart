@@ -79,9 +79,14 @@ class _MapPageState extends State<MapPage> {
     }
   }
 
-  setState(() {
+    try
+    {
+        setState(() {
+
     markers = newMarkers; // Update markers in the state
-  });
+      });
+
+    } catch(e){}
 }
 
 
@@ -189,9 +194,8 @@ LatLngBounds _getBoundsForPositions(List<LatLng> positions) {
           Positioned(
             top: 40.0,
             left: 20.0,
-            right: 20.0,
             child: Container(
-              width: 200,
+              width: 300,
               height: 50,
               decoration: BoxDecoration(
                 color: Color.fromARGB(255, 224, 236, 234),
@@ -203,22 +207,30 @@ LatLngBounds _getBoundsForPositions(List<LatLng> positions) {
                   Icon(Icons.airplane_ticket),
                   SizedBox(width: 10),
                   DropdownButton<String>(
-                    value: widget.information[0]['selectedKey'],
-                    hint: Text('Select/Add Here'),
-                    items: widget.jsonData.keys
-                        .take(widget.jsonData.keys.length - 1)
-                        .map<DropdownMenuItem<String>>((String key) {
-                      return DropdownMenuItem<String>(
-                        value: key,
-                        child: Text(key),
-                      );
-                    }).toList(),
-                    onChanged: (String? newValue) {
-                      if (newValue != null) {
-                        update(newValue);
-                      }
-                    },
-                  ),
+                  value: widget.information[0]['selectedKey'],
+                  hint: Text('Select/Add Here'),
+                  items: widget.jsonData.keys
+                      .take(widget.jsonData.keys.length - 1)
+                      .map<DropdownMenuItem<String>>((String key) {
+                    return DropdownMenuItem<String>(
+                      value: key,
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(maxWidth: 200), // Set a max width here
+                        child: Text(
+                          key,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    if (newValue != null) {
+                      update(newValue);
+                    }
+                  },
+                ),
+
                 ],
               ),
             ),

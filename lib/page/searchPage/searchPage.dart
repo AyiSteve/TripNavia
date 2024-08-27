@@ -69,13 +69,11 @@ class _SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Search Attractions'),
-      ),
+      backgroundColor:  Color(0xFFE6EAE4),
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(16.0),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
@@ -189,7 +187,7 @@ class SearchTripCard extends StatelessWidget {
             },
           ),
           SizedBox(height: 7),
-          Padding(padding: const EdgeInsets.all(16.0),
+          Padding(padding: EdgeInsets.only(top:5, left: 8),
           child: Text(
             attraction,
             style: TextStyle(

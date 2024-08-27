@@ -12,11 +12,19 @@ final apiKeyPlaces = dotenv.env['places_API_KEY'];
 
 
 Future<void> saveDataToFile(String jsonData) async {
-  final directory = await getApplicationDocumentsDirectory();  // Get the app's documents directory
-  final path = '/Users/stevegwy/Project/TripNavia/tripnavia/assets/storage.json';  // Define the path for the file
+  // Get the app's documents directory
+  final directory = await getApplicationDocumentsDirectory();
 
+  // Define the file path relative to the app's documents directory
+  final path = '${directory.path}/storage.json';
+
+  // Create a File instance at the given path
   final file = File(path);
-  await file.writeAsString(jsonData);  // Write the JSON data to the file
+
+  // Write the JSON data to the file
+  await file.writeAsString(jsonData);
+
+  print("Data written to file at: $path");
 }
 
 bool isLeapYear(year)
