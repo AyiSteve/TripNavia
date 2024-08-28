@@ -1,16 +1,11 @@
 # tripnavia
 
-A new Flutter project.
+Scheduling vacation application
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+Create a .dev file and input OPENAI API KEY, Picture API Key, and Places API KEY as OPENAI_API_KEY, Picture_API_KEY, and palces_API_KEY
 
-A few resources to get you started if this is your first Flutter project:
+Input the Google Map API into the the system
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Input 'flutter clean' and flutter pub get...
