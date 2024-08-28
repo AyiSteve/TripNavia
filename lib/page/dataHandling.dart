@@ -12,16 +12,12 @@ final apiKeyPlaces = dotenv.env['places_API_KEY'];
 
 
 Future<void> saveDataToFile(String jsonData) async {
-  // Get the app's documents directory
   final directory = await getApplicationDocumentsDirectory();
 
-  // Define the file path relative to the app's documents directory
   final path = '${directory.path}/storage.json';
 
-  // Create a File instance at the given path
   final file = File(path);
 
-  // Write the JSON data to the file
   await file.writeAsString(jsonData);
 
   print("Data written to file at: $path");

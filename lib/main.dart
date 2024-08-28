@@ -25,59 +25,45 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   int currentPlace = 0;
-  Map<String, dynamic> _jsonData = {};  // Loaded JSON data
-  List<Map<String, dynamic>> _items = [];  // Items for the selected vacation
-  List<Map<String, dynamic>> _information = [];  // Items for the selected vacation
-  String _selectedKey = 'Select a Location';  // Currently selected vacation key
+  Map<String, dynamic> _jsonData = {}; 
+  List<Map<String, dynamic>> _items = [];  
+  List<Map<String, dynamic>> _information = []; 
+  String _selectedKey = 'Select a Location';  
 
   @override
   void initState() {
     super.initState();
-    _loadData();  // Load the data when the app starts
+    _loadData();  
   }
 
 
 
-/// Loads the JSON data from the storage file and updates the UI.
 Future<void> _loadData() async {
   try {
-    // Get the application's documents directory
     final directory = await getApplicationDocumentsDirectory();
-
-    // Define the path to the storage file
     final path = '${directory.path}/storage.json';
-
-    // Check if the file exists
     final file = File(path);
     if (await file.exists()) {
-      // Read the JSON data from the file
       final String response = await file.readAsString();
 
       setState(() {
-        // Decode the JSON data into a map
         _jsonData = json.decode(response);
 
-        // Add a default entry to the JSON data
         _jsonData["+"] = [{'isActive': "false"}];
 
-        // Reorder the JSON data by day and time
         _reorderJsonDataByDayAndTime();
 
-        // Clear the _items list
         _items = [];
 
-        // Add a default entry to the _information list
         _information.add({
           'selectedKey': 'Select a Location',
           'informationLoaded': false,
         });
 
-        // Write the updated JSON data back to the file after sorting
         saveDataToFile(json.encode(_jsonData));
       });
     } else {
       print('Storage file not found, using default values.');
-      // Handle the case where the file doesn't exist
       setState(() {
         _jsonData = {};
         _jsonData["+"] = [{'isActive': "false"}];
@@ -106,7 +92,6 @@ Future<void> _loadData() async {
         final timeA = _parseTime(a['time']);
         final timeB = _parseTime(b['time']);
 
-        // Compare dates first, then times if dates are the same
         if (dateA.isBefore(dateB)) return -1;
         if (dateA.isAfter(dateB)) return 1;
         if (a['date']==b['date'])
@@ -124,14 +109,11 @@ Future<void> _loadData() async {
 
 DateTime _parseDate(String date) {
   try {
-    // Define the expected date format. Adjust the format string to match your date format.
     DateFormat format = DateFormat("MM-dd-yyyy");
 
-    // Parse the date string
     return format.parse(date);
   } catch (e) {
     print('Error parsing date: $e');
-    // Return a default date far in the past if parsing fails
     return DateTime(1900);
   }
 }
@@ -144,7 +126,6 @@ DateTime _parseDate(String date) {
       return DateTime(0, 1, 1, int.parse(parts[0]), int.parse(parts[1]));
     } catch (e) {
       print('Error parsing time: $e');
-      // Handle invalid time format, returning midnight as default
       return DateTime(0, 1, 1, 0, 0);
     }
   }
@@ -168,7 +149,7 @@ DateTime _parseDate(String date) {
           ),
         ),
         body: Center(
-          child: _getBody(),  // Using a method to retrieve the body
+          child: _getBody(),  
         ),
         bottomNavigationBar: BottomNavigationBar(
           items: const [

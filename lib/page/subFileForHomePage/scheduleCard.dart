@@ -218,7 +218,7 @@ void addInformationForm(
         setState(() {
           final now = DateTime.now();
           final dt = DateTime(now.year, now.month, now.day, value.hour, value.minute);
-          final format = DateFormat.Hm();  // Use 'Hm' for 24-hour format without seconds
+          final format = DateFormat.Hm();  
           selectedTime = format.format(dt);
         });
       }
@@ -244,7 +244,7 @@ void addInformationForm(
                 // Destination TextField
                  TypeAheadField<String>(
                     textFieldConfiguration: TextFieldConfiguration(
-                      controller: destinationName,  // Attach the TextEditingController here
+                      controller: destinationName,  
                       decoration: InputDecoration(
                         labelText: 'Input Destination',
                         border: OutlineInputBorder(
@@ -344,7 +344,7 @@ void addInformationForm(
                 onPressed: () {
                   deleteInformation(information[0]['selectedKey'], jsonData, item['destination']);
                   updateInformationCallback(information[0]['selectedKey']);
-                  Navigator.pop(context); // For example, close the dialog
+                  Navigator.pop(context);
                 },
                 backgroundColor: Colors.red,
                 child: const Icon(Icons.close),

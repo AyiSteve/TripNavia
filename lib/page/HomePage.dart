@@ -48,7 +48,6 @@ class HomePageState extends State<HomePage>  {
       _activeTab = 'Upcoming Trip';
     }
 
-        // Automatically load the Active tab's trips when the page is initialized
     _updateTripCards();
   }
 
@@ -69,7 +68,7 @@ class HomePageState extends State<HomePage>  {
               vacationName: entry.key,
               dayRange: entry.value[0]['dateRange'],
               information: widget.information,
-              onUpdateInformation: _updateInformationCallback, // Pass the callback function
+              onUpdateInformation: _updateInformationCallback, 
               jsonData: widget.jsonData,
               items: widget.items,
             );
@@ -88,18 +87,13 @@ class HomePageState extends State<HomePage>  {
     });
   }
 
-    /// Helper function to parse dates.
  DateTime _parseDate(String date) {
   try {
-    // Define the expected date format. Adjust the format string to match your date format.
     DateFormat format = DateFormat("MM-dd-yyyy");
 
-    // Parse the date string
     return format.parse(date);
   } catch (e) {
-    // ignore: avoid_print
     print('Error parsing date: $e');
-    // Return a default date far in the past if parsing fails
     return DateTime(1900);
   }
 }

@@ -22,9 +22,9 @@ class MapPage extends StatefulWidget {
 
 class _MapPageState extends State<MapPage> {
   GoogleMapController? _controller;
-  LatLng position = LatLng(36.7783, -119.4179); // Default position (California)
+  LatLng position = LatLng(0, 0); 
   List<dynamic> listOfDestination = [];
-  Set<Marker> markers = {}; // Store markers here
+  Set<Marker> markers = {}; 
 
   @override
   void initState() {
@@ -53,7 +53,7 @@ class _MapPageState extends State<MapPage> {
         return item['destination'] ?? 'Unknown';
       }).toList();
 
-      createMarkers(); // Update markers when destinations change
+      createMarkers(); 
     });
 
     searchLocation(selectedKey);
@@ -63,7 +63,7 @@ class _MapPageState extends State<MapPage> {
   Set<Marker> newMarkers = {};
 
   for (String destination in listOfDestination) {
-    LatLng? pos = await getLatLngFromGeocodingAPI(destination); // Use local variable
+    LatLng? pos = await getLatLngFromGeocodingAPI(destination); 
     if (pos != null) {
       newMarkers.add(
         Marker(
@@ -83,7 +83,7 @@ class _MapPageState extends State<MapPage> {
     {
         setState(() {
 
-    markers = newMarkers; // Update markers in the state
+    markers = newMarkers; 
       });
 
     } catch(e){}
@@ -115,21 +115,20 @@ Future<void> searchLocation(String location) async {
       }
 
           if (newPosition != null) {
-        _controller?.animateCamera(CameraUpdate.newLatLngZoom(newPosition, 14.0)); // Zoom closer
+        _controller?.animateCamera(CameraUpdate.newLatLngZoom(newPosition, 14.0)); 
       } 
     } else if (location == widget.information[0]['selectedKey']) {
-      // Case: Multiple destinations
       List<LatLng> positions = [];
       for (String destination in listOfDestination) {
         LatLng? pos = await getLatLngFromGeocodingAPI(destination);
         if (pos != null) {
-          positions.add(pos); // Add valid positions to the list
+          positions.add(pos); 
         }
       }
 
       if (positions.isNotEmpty) {
         LatLngBounds bounds = _getBoundsForPositions(positions);
-        _controller?.animateCamera(CameraUpdate.newLatLngBounds(bounds, 50)); // Adjust padding
+        _controller?.animateCamera(CameraUpdate.newLatLngBounds(bounds, 50)); 
       } else {
         print('No valid positions found for multiple destinations.');
       }
@@ -138,7 +137,7 @@ Future<void> searchLocation(String location) async {
       print('Searching for single location search: $location');
       LatLng? newPosition = await getLatLngFromGeocodingAPI(location);
       if (newPosition != null) {
-        _controller?.animateCamera(CameraUpdate.newLatLngZoom(newPosition, 14.0)); // Zoom closer
+        _controller?.animateCamera(CameraUpdate.newLatLngZoom(newPosition, 14.0)); 
       } else {
         print('Could not find a valid location for: $location');
       }
@@ -183,14 +182,13 @@ LatLngBounds _getBoundsForPositions(List<LatLng> positions) {
             onMapCreated: (controller) {
               _controller = controller;
             },
-            markers: markers, // Use the markers from the state
+            markers: markers, 
             zoomGesturesEnabled: true,
             scrollGesturesEnabled: true,
             myLocationEnabled: true,
             compassEnabled: true,
           ),
 
-          // Top App Bar with icons
           Positioned(
             top: 40.0,
             left: 20.0,
@@ -215,7 +213,7 @@ LatLngBounds _getBoundsForPositions(List<LatLng> positions) {
                     return DropdownMenuItem<String>(
                       value: key,
                       child: ConstrainedBox(
-                        constraints: BoxConstraints(maxWidth: 200), // Set a max width here
+                        constraints: BoxConstraints(maxWidth: 200), 
                         child: Text(
                           key,
                           overflow: TextOverflow.ellipsis,
@@ -236,7 +234,6 @@ LatLngBounds _getBoundsForPositions(List<LatLng> positions) {
             ),
           ),
 
-          // Draggable bottom sheet for Entertainment and Schedule
           DraggableScrollableSheet(
             initialChildSize: 0.3,
             minChildSize: 0.1,
@@ -244,7 +241,7 @@ LatLngBounds _getBoundsForPositions(List<LatLng> positions) {
             builder: (context, scrollController) {
               return Container(
                 decoration: BoxDecoration(
-                  color: Color.fromARGB(255, 224, 236, 234), // Light green background color
+                  color: Color.fromARGB(255, 224, 236, 234), 
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(16.0),
                     topRight: Radius.circular(16.0),
@@ -375,7 +372,7 @@ class entertainmentCard extends StatelessWidget {
           alignment: Alignment.bottomLeft,
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.blueGrey[200], // Background color for the text
+              color: Colors.blueGrey[200], 
               borderRadius: BorderRadius.only(
                 topRight: Radius.circular(20.0),
                 bottomLeft: Radius.circular(20.0),

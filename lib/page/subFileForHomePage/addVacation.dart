@@ -13,7 +13,7 @@ class TripCard extends StatelessWidget {
   final String vacationName;
   final String dayRange;
   final List<Map<String, dynamic>> information;
-  final Function(String) onUpdateInformation; // Callback to handle refresh
+  final Function(String) onUpdateInformation; 
   final Map<String, dynamic> jsonData;
   final List<Map<String, dynamic>> items;
 
@@ -31,12 +31,12 @@ class TripCard extends StatelessWidget {
    return GestureDetector(
   onTap: () {
     information[0]['selectedKey'] = vacationName;
-    onUpdateInformation(vacationName); // Use callback to update and refresh
+    onUpdateInformation(vacationName); 
   },
   child: Container(
-    width: 350, // Set a fixed width to make horizontal scrolling effective
+    width: 350,
     height: 240,
-    margin: const EdgeInsets.only(right: 16.0), // Add spacing between cards
+    margin: const EdgeInsets.only(right: 16.0), 
     padding: const EdgeInsets.all(16.0),
     decoration: BoxDecoration(
       color: Color(0xFFB0C1BC),
