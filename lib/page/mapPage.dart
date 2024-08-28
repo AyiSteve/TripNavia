@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -32,7 +34,12 @@ class _MapPageState extends State<MapPage> {
     if (widget.information[0]['selectedKey'] == 'Select a Location') {
       widget.information[0]['selectedKey'] = null;
     } else {
+      try{
       update(widget.information[0]['selectedKey']);
+       } catch(e)
+      {
+
+      }
     }
   }
 
